@@ -337,10 +337,11 @@
     metrics.forEach(function (m) {
       var val = parseInt(store[m.key], 10) || 0;
       var pct = Math.round((val / m.max) * 100);
+      var strength = pct >= 75 ? 'strong' : (pct >= 50 ? 'mid' : 'low');
       metricsHTML +=
         '<div class="lhc-metric">' +
           '<div class="lhc-metricLabel">' + m.icon + ' ' + esc(m.label) + '</div>' +
-          '<div class="lhc-metricBar"><div class="lhc-metricFill" style="width:' + pct + '%"></div></div>' +
+          '<div class="lhc-metricBar"><div class="lhc-metricFill" data-strength="' + strength + '" style="width:' + pct + '%"></div></div>' +
           '<div class="lhc-metricVal">' + val + '/' + m.max + '</div>' +
         '</div>';
     });
@@ -568,6 +569,16 @@
         lhcWrap.classList.add('view-' + view);
 
         console.log('[LHC] View switched to:', view);
+      });
+    }
+
+    /* ── Event: gamified mode toggle ── */
+    var gamifyToggleEl = document.getElementById('lhcGamifyToggle');
+    if (gamifyToggleEl) {
+      gamifyToggleEl.addEventListener('click', function () {
+        var isActive = lhcWrap.classList.toggle('gamified');
+        gamifyToggleEl.classList.toggle('active', isActive);
+        console.log('[LHC] Gamified mode:', isActive ? 'ON' : 'OFF');
       });
     }
 

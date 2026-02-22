@@ -6,8 +6,50 @@
 
   /* ═══════════════════════════════════════════════════════════════════════════
      CONFIG — Replace with your published Google Sheet CSV URL
+     Leave SHEET_URL empty to use built-in demo data.
+     Use export URL (format=csv), not the /edit link.
      ═══════════════════════════════════════════════════════════════════════════ */
-  var SHEET_URL = '';
+  var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1HeEaGe3vOWE4s6rDQMoVAHx0tf-idWkCyXHdj-qaiwM/export?format=csv&gid=0';
+
+  /* Google Form (or any URL) for appeal / request rating / early access. Leave empty to hide the link. */
+  var GOOGLE_FORM_URL = '';
+
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     HEADER → CARD FIELD MAPPING (customize when Excel/sheet headers change)
+     Card layout always uses: store.store_name, store.type, store.credibility, etc.
+     Missing columns are safe: missing header → empty string for that field.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  var CARD_FIELD_TO_HEADER = {
+    store_name:            'store_name',
+    type:                  'type',
+    overall_score:         'overall_score',
+    verdict:               'verdict',
+    company_about:         'company_about',
+    pro_1:                 'pro_1',
+    pro_2:                 'pro_2',
+    pro_3:                 'pro_3',
+    con_1:                 'con_1',
+    con_2:                 'con_2',
+    badges:                'badges',
+    warnings:              'warnings',
+    tags:                  'tags',
+    visit_link:            'visit_link',
+    review_link:           'review_link',
+    status:                'status',
+    credibility:           'credibility',
+    delivery:              'delivery',
+    quality:               'quality',
+    pricing:               'pricing',
+    experience:            'experience',
+    uniqueness:            'uniqueness',
+    legitimacy:            'legitimacy',
+    quality_consistency:   'quality_consistency',
+    moq_flexibility:       'moq_flexibility',
+    lead_time:             'lead_time',
+    pricing_transparency:   'pricing_transparency',
+    communication:        'communication'
+  };
 
 
   /* ═══════════════════════════════════════════════════════════════════════════
@@ -190,6 +232,24 @@
       data.push(obj);
     }
     return data;
+  }
+
+  function normalizeHeader(h) {
+    return (h || '').trim().toLowerCase().replace(/\s+/g, '_');
+  }
+
+  function rowToCard(row) {
+    var card = {};
+    var key, header, norm, val;
+    if (!row || typeof row !== 'object') return card;
+    for (key in CARD_FIELD_TO_HEADER) {
+      if (!CARD_FIELD_TO_HEADER.hasOwnProperty(key)) continue;
+      header = CARD_FIELD_TO_HEADER[key];
+      norm = normalizeHeader(header);
+      val = row[norm];
+      card[key] = (val != null && val !== '') ? String(val).trim() : '';
+    }
+    return card;
   }
 
 
@@ -593,16 +653,16 @@
           return res.text();
         })
         .then(function (text) {
-          allStores = parseCSV(text);
+          allStores = parseCSV(text).map(rowToCard);
           console.log('[LHC] parsed', allStores.length, 'rows from sheet');
           loadingEl.style.display = 'none';
           renderAll();
         })
         .catch(function (err) {
-          console.error('[LHC] ❌ failed to load sheet:', err);
-          loadingEl.innerHTML =
-            '<p style="color:#DA6220;font-family:Inter,sans-serif;font-weight:700;">' +
-            'Failed to load store data. Check the Google Sheet URL.</p>';
+          console.warn('[LHC] Sheet fetch failed, using demo data:', err);
+          loadingEl.style.display = 'none';
+          allStores = DEMO_DATA;
+          renderAll();
         });
     } else {
       /* Demo mode */
@@ -610,6 +670,20 @@
       console.log('[LHC] demo mode — loaded', allStores.length, 'stores');
       loadingEl.style.display = 'none';
       renderAll();
+    }
+
+    /* Optional: show Google Form / appeal link in header if configured */
+    var appealLink = document.getElementById('lhcAppealLink');
+    var appealWrap = document.getElementById('lhcAppealWrap');
+    if (appealLink && appealWrap) {
+      if (GOOGLE_FORM_URL) {
+        appealLink.href = GOOGLE_FORM_URL;
+        appealLink.setAttribute('target', '_blank');
+        appealLink.setAttribute('rel', 'noopener');
+        appealWrap.style.display = '';
+      } else {
+        appealWrap.style.display = 'none';
+      }
     }
   }
 

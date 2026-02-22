@@ -5,11 +5,16 @@
   console.log('[LHC] readyState:', document.readyState);
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     CONFIG — Replace with your published Google Sheet CSV URL
-     Leave SHEET_URL empty to use built-in demo data.
-     Use export URL (format=csv), not the /edit link.
+     CONFIG — Google Sheet CSV or proxy URL
+     - SHEET_URL: Google export URL (format=csv) or your own API that returns CSV.
+       Direct Google export often returns 400/CORS when fetched from the browser;
+       then use SHEET_PROXY_URL instead.
+     - SHEET_PROXY_URL: If set, we fetch this instead of SHEET_URL. Your server
+       fetches the Google Sheet and returns the CSV (avoids CORS/400).
+     Leave both empty to use built-in demo data.
      ═══════════════════════════════════════════════════════════════════════════ */
-  var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1HeEaGe3vOWE4s6rDQMoVAHx0tf-idWkCyXHdj-qaiwM/export?format=csv&gid=0';
+  var SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy8-alXtR6-Lh0lD8UkH0xokOMXphQM5eYVFzVLdji-nY8DPftSdN0JUAZbhJyG9R2wuNb0rXH4gAy/pub?output=csv';
+  var SHEET_PROXY_URL = '';  /* optional: use if direct fetch fails (CORS/400) */
 
   /* Google Form (or any URL) for appeal / request rating / early access. Leave empty to hide the link. */
   var GOOGLE_FORM_URL = '';
@@ -643,10 +648,11 @@
     }
 
     /* ── Load data ── */
-    console.log('[LHC] SHEET_URL:', SHEET_URL ? SHEET_URL : '(empty — using demo data)');
+    var dataUrl = SHEET_PROXY_URL || SHEET_URL;
+    console.log('[LHC] data URL:', dataUrl ? dataUrl : '(empty — using demo data)');
 
-    if (SHEET_URL) {
-      fetch(SHEET_URL)
+    if (dataUrl) {
+      fetch(dataUrl)
         .then(function (res) {
           console.log('[LHC] fetch status:', res.status);
           if (!res.ok) throw new Error('HTTP ' + res.status);

@@ -13,7 +13,7 @@
        fetches the Google Sheet and returns the CSV (avoids CORS/400).
      Leave both empty to use built-in demo data.
      ═══════════════════════════════════════════════════════════════════════════ */
-  var SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy8-alXtR6-Lh0lD8UkH0xokOMXphQM5eYVFzVLdji-nY8DPftSdN0JUAZbhJyG9R2wuNb0rXH4gAy/pub?output=csv';
+  var SHEET_URL = '';
   var SHEET_PROXY_URL = '';  /* optional: use if direct fetch fails (CORS/400) */
 
   /* Google Form (or any URL) for appeal / request rating / early access. Leave empty to hide the link. */

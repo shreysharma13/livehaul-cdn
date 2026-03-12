@@ -13,8 +13,8 @@
        fetches the Google Sheet and returns the CSV (avoids CORS/400).
      Leave both empty to use built-in demo data.
      ═══════════════════════════════════════════════════════════════════════════ */
-  var SHEET_URL = '';
-  var SHEET_PROXY_URL = '';  /* optional: use if direct fetch fails (CORS/400) */
+     var SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy8-alXtR6-Lh0lD8UkH0xokOMXphQM5eYVFzVLdji-nY8DPftSdN0JUAZbhJyG9R2wuNb0rXH4gAy/pub?output=csv';
+     var SHEET_PROXY_URL = '';  /* optional: use if direct fetch fails (CORS/400) */
 
   /* Google Form (or any URL) for appeal / request rating / early access. Leave empty to hide the link. */
   var GOOGLE_FORM_URL = '';
@@ -283,6 +283,27 @@
     return d.innerHTML;
   }
 
+  function prettyDomain(url) {
+    if (!url) return '';
+    // Remove protocol
+    var out = url.replace(/^https?:\/\//i, '');
+    // Remove leading www.
+    out = out.replace(/^www\./i, '');
+    // Keep only host (up to first '/')
+    out = out.split('/')[0];
+    return out;
+  }
+
+  function displayName(store) {
+    var name = (store.store_name || '').trim();
+    if (!name) return 'Unnamed Store';
+    // If the "name" field looks like a URL, pretty-print it as a domain.
+    if (/^https?:\/\//i.test(name) || /^www\./i.test(name)) {
+      return prettyDomain(name) || name;
+    }
+    return name;
+  }
+
   function splitField(str) {
     if (!str || !str.trim()) return [];
     return str.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -363,7 +384,7 @@
         '</div>' +
 
         /* Store name */
-        '<div class="lhc-idName">' + esc(store.store_name || 'Unnamed Store') + '</div>' +
+        '<div class="lhc-idName">' + esc(displayName(store)) + '</div>' +
 
         /* Verdict */
         (store.verdict
@@ -462,10 +483,10 @@
 
         /* Head */
         '<div class="lhc-cardHead">' +
-          '<div class="lhc-cardHeadLeft">' +
-            '<div class="lhc-cardType">' + esc(typeLabel) + '</div>' +
-            '<div class="lhc-cardName">' + esc(store.store_name || 'Unnamed Store') + '</div>' +
-          '</div>' +
+        '<div class="lhc-cardHeadLeft">' +
+        '<div class="lhc-cardType">' + esc(typeLabel) + '</div>' +
+        '<div class="lhc-cardName">' + esc(displayName(store)) + '</div>' +
+        '</div>' +
           '<div class="lhc-scoreWrap">' +
             '<div class="lhc-scoreBadge">' +
               '<div class="lhc-scoreNum">' + score + '</div>' +

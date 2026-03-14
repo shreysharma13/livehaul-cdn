@@ -547,9 +547,6 @@
     var q = searchQuery.toLowerCase().trim();
 
     var filtered = allStores.filter(function (store) {
-      /* Status gate */
-      if ((store.status || '').toLowerCase() !== 'live') return false;
-
       /* Type filter */
       var type = (store.type || 'seller').toLowerCase();
       if (activeFilter !== 'all' && type !== activeFilter) return false;
@@ -582,10 +579,7 @@
     }
 
     /* Count */
-    var total = allStores.filter(function (s) {
-      return (s.status || '').toLowerCase() === 'live';
-    }).length;
-    countEl.textContent = 'Showing ' + filtered.length + ' of ' + total;
+    countEl.textContent = 'Showing ' + filtered.length + ' of ' + allStores.length;
     console.log('[LHC] renderAll() complete ✅');
   }
 
